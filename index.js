@@ -26,8 +26,35 @@ function renderProducts(products) {
   }).join('');
 }
 
+function renderProduct(product) {
+  console.log(product);
+  return `
+    <button class="back">Back</button>
+    <h1>${product.title} - $${product.price.toFixed(2)}</h1>
+    <p>${product.description}</p>
+    <p>Tags: ${renderTags(product.tags)}</p>
+    <h4>Reviews</h4>
+    <ul class="reviews-list">
+      ${ renderReviews(product.reviews) }
+    </ul>
+  `
+}
+
+function renderTags(tags) {
+  return tags.map(function(tag) {
+    return `${tag.name} `;
+  }).join('');
+}
+
+function renderReviews(reviews) {
+  return reviews.map(function(review) {
+    return `<li class="review">${review.body}</li>`;
+  }).join('');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const productsList = document.querySelector('#products-list');
+  const productDetails = document.querySelector('#product-details');
 
   function loadProducts() {
     getProducts()
@@ -36,5 +63,30 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   loadProducts();
+
+  productsList.addEventListener('click', function(event) {
+    const { target } = event;
+
+    if (target.matches('.product-link')) {
+      event.preventDefault();
+      const productId = target.getAttribute('data-id');
+
+      getProduct(productId)
+        .then(function(product) {
+          productDetails.innerHTML = renderProduct(product);
+          productDetails.classList.remove('hidden');
+          productsList.classList.add('hidden');
+        });
+    }
+  });
+
+  productDetails.addEventListener('click', function(event) {
+    const { target } = event;
+
+    if (target.matches('button.back')) {
+      productDetails.classList.add('hidden');
+      productsList.classList.remove('hidden');
+    }
+  });
 
 });
