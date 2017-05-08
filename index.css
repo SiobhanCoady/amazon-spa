@@ -11,3 +11,7 @@ html {
 .hidden {
   display: none;
 }
+
+.product-summary {
+  margin-bottom: 20px;
+}

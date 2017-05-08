@@ -11,6 +11,19 @@ function getProduct(id) {
     .then(function(res) { return res.json() })
 }
 
+function postReview(id, reviewParams) {
+  return fetch(
+    `${DOMAIN}/api/v1/products/${id}/reviews?api_token=${API_TOKEN}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({review: reviewParams})
+    }
+  )
+}
+
 function renderProducts(products) {
   return products.map(function(product) {
     return `
@@ -48,18 +61,25 @@ function renderTags(tags) {
 
 function renderReviews(reviews) {
   return reviews.map(function(review) {
-    return `<li class="review">${review.body}</li>`;
+    return `<li class="review">${review.body}, ${review.rating} stars</li>`;
   }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   const productsList = document.querySelector('#products-list');
   const productDetails = document.querySelector('#product-details');
+  const reviewForm = document.querySelector('#review-form');
 
   function loadProducts() {
     getProducts()
-    .then(renderProducts)
-    .then(function(html) { productsList.innerHTML = html })
+      .then(renderProducts)
+      .then(function(html) { productsList.innerHTML = html })
+  }
+
+  function loadProduct(id) {
+    getProduct(id)
+      .then(function(product) { return renderProduct(product) })
+      .then(function(html) { productDetails.innerHTML = html })
   }
 
   loadProducts();
@@ -75,6 +95,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(product) {
           productDetails.innerHTML = renderProduct(product);
           productDetails.classList.remove('hidden');
+          reviewForm.classList.remove('hidden');
+          reviewForm.setAttribute('data-id', productId);
           productsList.classList.add('hidden');
         });
     }
@@ -85,8 +107,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (target.matches('button.back')) {
       productDetails.classList.add('hidden');
+      reviewForm.classList.add('hidden');
       productsList.classList.remove('hidden');
     }
+  });
+
+  reviewForm.addEventListener('submit', function(event) {
+    const { target } = event;
+    event.preventDefault();
+
+    const body = event.currentTarget.querySelector('#body');
+    const rating = event.currentTarget.querySelector('#rating');
+    const productId = target.getAttribute('data-id');
+    console.log(productId);
+
+    const fData = new FormData(event.currentTarget);
+
+    postReview(productId, {body: fData.get('body'), rating: fData.get('rating')})
+      .then(function() {
+        loadProduct(productId);
+        body.value = '';
+        rating.value = '';
+      })
   });
 
 });
