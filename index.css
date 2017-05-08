@@ -1,0 +1,9 @@
+html {
+  font-family: 'Helvetica', sans-serif;
+  font-weight: 100;
+}
+
+* {
+  font-family: inherit;
+  font-weight: inherit;
+}
